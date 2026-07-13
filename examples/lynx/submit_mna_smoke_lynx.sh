@@ -32,4 +32,9 @@ export CASE_RUNNER="${CAMPAIGN_ROOT}/run_warpx_mna_case_lynx.sh"
 export CONFIRM_CLEANUP_EXECUTE=0
 export MNA_MAKE_ANIMATION="${MNA_MAKE_ANIMATION:-0}"
 
+python -m campaign_workflow.cli.init_case_states \
+    --campaign-root "${CAMPAIGN_ROOT}" \
+    --case-id "${SLURM_ARRAY_TASK_ID}" \
+    --verbose
+
 exec bash "${WORKFLOW_ROOT}/examples/sunrise/submit_case_cycle_array.sh"
