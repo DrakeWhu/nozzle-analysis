@@ -62,7 +62,20 @@ class ContractTests(unittest.TestCase):
         }
         self.assertTrue(objective_metrics.issubset(summary["required_columns"]))
 
+    def test_lynx_stale_diagnostic_literal_is_checked_explicitly(self) -> None:
+        script = (
+            ROOT / "examples/lynx/run_warpx_mna_case_lynx.sh"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn(
+            "existing_raw=(diags/*.h5 diags/*.hdf5 "
+            "diags/reduced/carbon_probe_extrema.txt)",
+            script,
+        )
+        self.assertIn(
+            "if [[ -e diags/reduced/carbon_probe_extrema.txt ]]; then",
+            script,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
-
