@@ -20,11 +20,14 @@ if [[ "${SLURM_JOB_PARTITION:-}" != "novas" ]]; then
 fi
 CAMPAIGN_ROOT="${CAMPAIGN_ROOT:-${SLURM_SUBMIT_DIR}}"
 WORKFLOW_ROOT="${WORKFLOW_ROOT:-${HOME}/apps/src/campaign-workflow}"
-WORKFLOW_ENV_SCRIPT="${WORKFLOW_ENV_SCRIPT:-${HOME}/apps/env/campaign_workflow_lynx.sh}"
-if [[ -f "${WORKFLOW_ENV_SCRIPT}" ]]; then
-    source "${WORKFLOW_ENV_SCRIPT}"
+WORKFLOW_ENV="${WORKFLOW_ENV:-${HOME}/apps/env/campaign_workflow_lynx.sh}"
+WORKFLOW_ENV_SCRIPT="${WORKFLOW_ENV_SCRIPT:-${WORKFLOW_ENV}}"
+if [[ ! -f "${WORKFLOW_ENV}" ]]; then
+    echo "[MNA-SMOKE] missing workflow env: ${WORKFLOW_ENV}" >&2
+    exit 1
 fi
-export CAMPAIGN_ROOT WORKFLOW_ROOT WORKFLOW_ENV_SCRIPT
+source "${WORKFLOW_ENV}"
+export CAMPAIGN_ROOT WORKFLOW_ROOT WORKFLOW_ENV WORKFLOW_ENV_SCRIPT
 export CASE_RUNNER="${CAMPAIGN_ROOT}/run_warpx_mna_case_lynx.sh"
 export CONFIRM_CLEANUP_EXECUTE=0
 export MNA_MAKE_ANIMATION="${MNA_MAKE_ANIMATION:-0}"
