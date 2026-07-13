@@ -21,7 +21,9 @@ if [[ ! -f case.env || ! -f input.py ]]; then
     echo "[MNA-WARPX] missing case.env or input.py in ${CASE_DIR}" >&2
     exit 1
 fi
+set -a
 source ./case.env
+set +a
 mkdir -p logs post diags/reduced
 
 shopt -s nullglob
@@ -61,7 +63,7 @@ export MKL_NUM_THREADS=1
     echo "SLURM_NTASKS=${SLURM_NTASKS}"
     echo "python=$(command -v python)"
     python --version
-    env | grep '^MNA_' | sort
+    { env | grep '^MNA_' || true; } | sort
 } | tee run_info.txt
 
 echo "[MNA-WARPX] PICMI write-only preflight"
