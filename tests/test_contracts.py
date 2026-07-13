@@ -89,6 +89,15 @@ class ContractTests(unittest.TestCase):
             self.assertIn("set +a", script)
         self.assertIn("{ env | grep '^MNA_' || true; } | sort", runner)
 
+    def test_lynx_warpx_runner_uses_mpirun_by_default(self) -> None:
+        runner = (
+            ROOT / "examples/lynx/run_warpx_mna_case_lynx.sh"
+        ).read_text(encoding="utf-8")
+        self.assertIn('MPI_LAUNCHER="${MNA_MPI_LAUNCHER:-mpirun}"', runner)
+        self.assertIn('mpirun|mpiexec)', runner)
+        self.assertIn('srun)', runner)
+        self.assertNotIn('srun -n "${SLURM_NTASKS}" python -u input.py', runner)
+
     def test_picmi_analytic_distribution_constants_are_expression_inputs_only(
         self,
     ) -> None:
