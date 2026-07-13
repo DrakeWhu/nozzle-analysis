@@ -25,7 +25,10 @@ source ./case.env
 mkdir -p logs post diags/reduced
 
 shopt -s nullglob
-existing_raw=(diags/*.h5 diags/*.hdf5 diags/reduced/carbon_probe_extrema.txt)
+existing_raw=(diags/*.h5 diags/*.hdf5)
+if [[ -e diags/reduced/carbon_probe_extrema.txt ]]; then
+    existing_raw+=(diags/reduced/carbon_probe_extrema.txt)
+fi
 if (( ${#existing_raw[@]} > 0 )); then
     echo "[MNA-WARPX] refusing to mix a new run with existing diagnostics:" >&2
     printf '  %s\n' "${existing_raw[@]}" >&2
@@ -95,4 +98,3 @@ fi
 test -s diags/reduced/carbon_probe_extrema.txt
 date --iso-8601=seconds
 echo "[MNA-WARPX] DONE"
-
