@@ -31,7 +31,8 @@ Create the campaign from the versioned static files:
 
 ```bash
 export MNA_SOURCE="${HOME}/apps/src/mna-nozzle-analysis/examples/lynx"
-export CAMPAIGN_ROOT="${HOME}/warpx_runs/mna_nozzle_rz_smoke"
+export RUN_STAMP="$(date +%Y%m%d_%H%M%S)"
+export CAMPAIGN_ROOT="${HOME}/warpx_runs/mna_nozzle_rz_smoke_${RUN_STAMP}"
 mkdir -p "${CAMPAIGN_ROOT}" "${CAMPAIGN_ROOT}/array_logs"
 cp "${MNA_SOURCE}/campaign.json" "${CAMPAIGN_ROOT}/"
 cp "${MNA_SOURCE}/cases.tsv" "${CAMPAIGN_ROOT}/"
@@ -52,6 +53,19 @@ python -m campaign_workflow.cli.init_case_states \
   --campaign-root "${CAMPAIGN_ROOT}" --case-id 0 --verbose
 python -m campaign_workflow.cli.init_case_states \
   --campaign-root "${CAMPAIGN_ROOT}" --case-id 0 --check --verbose
+
+STALE="$(
+  find "${CAMPAIGN_ROOT}" -maxdepth 5 \
+    \( -name '*.h5' -o -name '*.hdf5' -o -name 'carbon_probe_extrema.txt' \) \
+    -print -quit
+)"
+if [[ -n "${STALE}" ]]; then
+  echo "ERROR: fresh campaign unexpectedly contains stale diagnostics"
+  find "${CAMPAIGN_ROOT}" -maxdepth 5 \
+    \( -name '*.h5' -o -name '*.hdf5' -o -name 'carbon_probe_extrema.txt' \) \
+    -print
+  exit 1
+fi
 ```
 
 Submit the one array element.  Leave animation off until the core CSV/plot
@@ -59,7 +73,15 @@ contract passes; set `MNA_MAKE_ANIMATION=1` on a later rerun if desired.
 
 ```bash
 cd "${CAMPAIGN_ROOT}"
-sbatch --export=ALL,CAMPAIGN_ROOT="${CAMPAIGN_ROOT}",WORKFLOW_ENV="${HOME}/apps/env/campaign_workflow_lynx.sh" submit_mna_smoke_lynx.sh
+JOB_ID="$(
+  sbatch --parsable \
+    --export=ALL,CAMPAIGN_ROOT="${CAMPAIGN_ROOT}",WORKFLOW_ENV="${HOME}/apps/env/campaign_workflow_lynx.sh" \
+    submit_mna_smoke_lynx.sh
+)"
+echo "${CAMPAIGN_ROOT}" > "${HOME}/last_mna_nozzle_campaign_root.txt"
+echo "${JOB_ID}" > "${HOME}/last_mna_nozzle_job_id.txt"
+echo "CAMPAIGN_ROOT=${CAMPAIGN_ROOT}"
+echo "JOB_ID=${JOB_ID}"
 ```
 
 The success criteria are:
