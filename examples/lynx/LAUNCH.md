@@ -40,7 +40,7 @@ cp "${MNA_SOURCE}/run_warpx_mna_case_lynx.sh" "${CAMPAIGN_ROOT}/"
 cp "${MNA_SOURCE}/run_mna_case_analysis_lynx.sh" "${CAMPAIGN_ROOT}/"
 cp "${MNA_SOURCE}/submit_mna_smoke_lynx.sh" "${CAMPAIGN_ROOT}/"
 chmod 0755 "${CAMPAIGN_ROOT}"/*.sh
-source "${HOME}/apps/env/campaign-workflow.sh"
+source "${HOME}/apps/env/campaign_workflow_lynx.sh"
 python -m campaign_workflow.cli.materialize_cases \
   --campaign-root "${CAMPAIGN_ROOT}" --case-id 0 --dry-run --verbose
 python -m campaign_workflow.cli.materialize_cases \
@@ -64,4 +64,3 @@ The success criteria are:
 - `post/carbon_probe_timeseries.csv` reaches approximately 1000 fs;
 - the cleanup phase only prints a dry-run manifest and leaves every H5 file
   intact.
-
