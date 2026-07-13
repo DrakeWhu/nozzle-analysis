@@ -69,7 +69,9 @@
       "MNA_Z_NECK_M": "0.0",
       "MNA_STOP_TIME_S": "1.0e-12",
       "MNA_CELL_SIZE_M": "5.0e-8",
-      "MNA_FIELD_DIAG_PERIOD": "100",
+      "MNA_FIELD_DIAG_PERIOD": "250",
+      "MNA_FIELD_DIAG_STEP_MIN": "1000",
+      "MNA_FIELD_DIAG_STEP_MAX": "3500",
       "MNA_PROBE_DIAG_PERIOD": "10"
     }
   },
@@ -78,8 +80,7 @@
       "name": "fields_openpmd",
       "kind": "openpmd_hdf5",
       "path": "diags",
-      "glob": "diags/*.h5",
-      "allowed_suffixes": [".h5", ".hdf5"],
+      "glob": "diags/openpmd*",
       "min_files": 1,
       "min_age_seconds": 0,
       "required": true
@@ -183,6 +184,7 @@
   },
   "cleanup": {
     "raw_delete_globs": [
+      "diags/openpmd*",
       "diags/*.h5",
       "diags/*.hdf5"
     ],
@@ -204,4 +206,3 @@
     "post_dir": "post"
   }
 }
-
