@@ -147,10 +147,8 @@ n_aluminum_m3 = 6.0e28
 aluminum_charge_state = 13
 geometry_constants = {
     "n_Al": n_aluminum_m3,
-    "L1": L1,
     "L2": L2,
     "d_paper": wall,
-    "r_head": r_head,
     "r_neck": r_neck,
     "r_exit": r_exit,
     "z_neck_paper": z_neck,
@@ -363,4 +361,3 @@ if write_only:
 simulation.initialize_inputs()
 simulation.initialize_warpx()
 simulation.step()
-
