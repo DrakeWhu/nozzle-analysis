@@ -27,7 +27,7 @@ set +a
 mkdir -p logs post diags/reduced
 
 shopt -s nullglob
-existing_raw=(diags/*.h5 diags/*.hdf5)
+existing_raw=(diags/openpmd* diags/*.h5 diags/*.hdf5)
 if [[ -e diags/reduced/carbon_probe_extrema.txt ]]; then
     existing_raw+=(diags/reduced/carbon_probe_extrema.txt)
 fi
@@ -91,6 +91,12 @@ if payload["field_diagnostic"].get("data") != ["Ez"]:
     raise SystemExit("objective diagnostic must contain Ez only")
 if payload["field_diagnostic"].get("dump_all_rz_modes") is not True:
     raise SystemExit("objective diagnostic must dump every RZ mode")
+if int(payload["field_diagnostic"].get("step_min", -1)) < 0:
+    raise SystemExit("field diagnostic must define a non-negative step_min")
+if int(payload["field_diagnostic"].get("step_max", -1)) <= int(
+    payload["field_diagnostic"].get("step_min", -1)
+):
+    raise SystemExit("field diagnostic step window is invalid")
 print("[MNA-WARPX] resolved-parameter preflight OK")
 PY
 
@@ -116,9 +122,9 @@ echo "[MNA-WARPX] ${MPI_LAUNCHER} ${mpi_args[*]} python -u input.py"
 "${MPI_LAUNCHER}" "${mpi_args[@]}" python -u input.py
 
 shopt -s nullglob
-produced_h5=(diags/*.h5 diags/*.hdf5)
-if (( ${#produced_h5[@]} == 0 )); then
-    echo "[MNA-WARPX] simulation produced no openPMD HDF5 files" >&2
+produced_openpmd=(diags/openpmd* diags/*.h5 diags/*.hdf5)
+if (( ${#produced_openpmd[@]} == 0 )); then
+    echo "[MNA-WARPX] simulation produced no openPMD files" >&2
     exit 1
 fi
 test -s diags/reduced/carbon_probe_extrema.txt
