@@ -11,7 +11,9 @@ if [[ ! -f "${CASE_DIR}/case.env" ]]; then
     echo "[MNA-ANALYSIS] missing case.env in ${CASE_DIR}" >&2
     exit 1
 fi
+set -a
 source "${CASE_DIR}/case.env"
+set +a
 
 if [[ -n "${MNA_ANALYSIS_ENV_SCRIPT:-}" ]]; then
     if [[ ! -f "${MNA_ANALYSIS_ENV_SCRIPT}" ]]; then
