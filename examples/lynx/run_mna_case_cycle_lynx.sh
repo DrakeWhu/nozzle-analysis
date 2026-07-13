@@ -93,6 +93,8 @@ phase_log_path() {
     printf '%s/logs/case_cycle_%s_%s.txt' "${CASE_DIR}" "${phase_name}" "${stream_name}"
 }
 
+RUN_PHASE_RC=0
+
 run_phase() {
     local phase_name="$1"
     shift
@@ -110,15 +112,24 @@ run_phase() {
     set +e
     "$@" > >(tee -a "${stdout_log}") 2> >(tee -a "${stderr_log}" >&2)
     rc=$?
+    RUN_PHASE_RC="${rc}"
 
     if [[ "${rc}" -ne 0 ]]; then
         echo "[MNA-CYCLE] FAIL phase=${phase_name} return_code=${rc}" >&2
-        return "${rc}"
+        return 0
     fi
 
     set -e
     echo "[MNA-CYCLE] END phase=${phase_name}"
     return 0
+}
+
+require_phase() {
+    run_phase "$@"
+    if [[ "${RUN_PHASE_RC}" -ne 0 ]]; then
+        echo "[MNA-CYCLE] STOP: required phase failed return_code=${RUN_PHASE_RC}" >&2
+        exit "${RUN_PHASE_RC}"
+    fi
 }
 
 load_workflow_env() {
@@ -127,7 +138,7 @@ load_workflow_env() {
 
 load_workflow_env
 
-run_phase mark_sim_submitted \
+require_phase mark_sim_submitted \
     python -m campaign_workflow.cli.mark_sim_submitted \
         --campaign-root "${CAMPAIGN_ROOT}" \
         --case-id "${CASE_ID}" \
@@ -138,7 +149,7 @@ run_phase mark_sim_submitted \
         --environment-name "campaign-workflow-py311" \
         --verbose
 
-run_phase mark_sim_running \
+require_phase mark_sim_running \
     python -m campaign_workflow.cli.mark_sim_running \
         --campaign-root "${CAMPAIGN_ROOT}" \
         --case-id "${CASE_ID}" \
@@ -151,10 +162,8 @@ run_phase mark_sim_running \
         --stderr-log "${STDERR_LOG}" \
         --verbose
 
-set +e
 run_phase run_external_simulation bash "${CASE_RUNNER}" "${CASE_DIR}"
-SIM_RC=$?
-set -e
+SIM_RC="${RUN_PHASE_RC}"
 
 load_workflow_env
 
@@ -178,37 +187,37 @@ if [[ "${SIM_RC}" -ne 0 ]]; then
     exit "${SIM_RC}"
 fi
 
-run_phase mark_sim_done \
+require_phase mark_sim_done \
     python -m campaign_workflow.cli.mark_sim_done \
         --campaign-root "${CAMPAIGN_ROOT}" \
         --case-id "${CASE_ID}" \
         --verbose
 
-run_phase validate_raw_case \
+require_phase validate_raw_case \
     python -m campaign_workflow.cli.validate_raw_case \
         --campaign-root "${CAMPAIGN_ROOT}" \
         --case-id "${CASE_ID}" \
         --verbose
 
-run_phase analyze_case \
+require_phase analyze_case \
     python -m campaign_workflow.cli.analyze_case \
         --campaign-root "${CAMPAIGN_ROOT}" \
         --case-id "${CASE_ID}" \
         --verbose
 
-run_phase validate_reduced_case \
+require_phase validate_reduced_case \
     python -m campaign_workflow.cli.validate_reduced_case \
         --campaign-root "${CAMPAIGN_ROOT}" \
         --case-id "${CASE_ID}" \
         --verbose
 
-run_phase mark_raw_delete_eligible \
+require_phase mark_raw_delete_eligible \
     python -m campaign_workflow.cli.mark_raw_delete_eligible \
         --campaign-root "${CAMPAIGN_ROOT}" \
         --case-id "${CASE_ID}" \
         --verbose
 
-run_phase cleanup_raw_case_dry_run \
+require_phase cleanup_raw_case_dry_run \
     python -m campaign_workflow.cli.cleanup_raw_case \
         --campaign-root "${CAMPAIGN_ROOT}" \
         --case-id "${CASE_ID}" \
@@ -216,7 +225,7 @@ run_phase cleanup_raw_case_dry_run \
         --verbose
 
 if [[ "${CONFIRM_CLEANUP_EXECUTE:-0}" == "1" ]]; then
-    run_phase cleanup_raw_case_execute \
+    require_phase cleanup_raw_case_execute \
         python -m campaign_workflow.cli.cleanup_raw_case \
             --campaign-root "${CAMPAIGN_ROOT}" \
             --case-id "${CASE_ID}" \
