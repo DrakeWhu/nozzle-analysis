@@ -50,6 +50,11 @@ if [[ ! -f "${WARPX_VENV}/bin/activate" ]]; then
     exit 1
 fi
 source "${WARPX_VENV}/bin/activate"
+MPI_LAUNCHER="${MNA_MPI_LAUNCHER:-mpirun}"
+if ! command -v "${MPI_LAUNCHER}" >/dev/null 2>&1; then
+    echo "[MNA-WARPX] missing MPI launcher: ${MPI_LAUNCHER}" >&2
+    exit 1
+fi
 export OMP_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 export MKL_NUM_THREADS=1
@@ -62,6 +67,7 @@ export MKL_NUM_THREADS=1
     echo "SLURM_JOB_PARTITION=${SLURM_JOB_PARTITION}"
     echo "SLURM_NTASKS=${SLURM_NTASKS}"
     echo "python=$(command -v python)"
+    echo "mpi_launcher=$(command -v "${MPI_LAUNCHER}")"
     python --version
     { env | grep '^MNA_' || true; } | sort
 } | tee run_info.txt
@@ -88,8 +94,26 @@ if payload["field_diagnostic"].get("dump_all_rz_modes") is not True:
 print("[MNA-WARPX] resolved-parameter preflight OK")
 PY
 
-echo "[MNA-WARPX] srun -n ${SLURM_NTASKS} python -u input.py"
-srun -n "${SLURM_NTASKS}" python -u input.py
+mpi_args=()
+case "$(basename "${MPI_LAUNCHER}")" in
+    mpirun|mpiexec)
+        mpi_args=(-np "${SLURM_NTASKS}")
+        ;;
+    srun)
+        mpi_args=(-n "${SLURM_NTASKS}")
+        ;;
+    *)
+        echo "[MNA-WARPX] unsupported MPI launcher: ${MPI_LAUNCHER}" >&2
+        exit 1
+        ;;
+esac
+if [[ -n "${MNA_MPI_EXTRA_ARGS:-}" ]]; then
+    # shellcheck disable=SC2206
+    extra_mpi_args=(${MNA_MPI_EXTRA_ARGS})
+    mpi_args+=("${extra_mpi_args[@]}")
+fi
+echo "[MNA-WARPX] ${MPI_LAUNCHER} ${mpi_args[*]} python -u input.py"
+"${MPI_LAUNCHER}" "${mpi_args[@]}" python -u input.py
 
 shopt -s nullglob
 produced_h5=(diags/*.h5 diags/*.hdf5)
