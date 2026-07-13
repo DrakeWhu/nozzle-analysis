@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import csv
 import json
 import unittest
@@ -87,6 +88,34 @@ class ContractTests(unittest.TestCase):
             self.assertIn("set -a\nsource", script)
             self.assertIn("set +a", script)
         self.assertIn("{ env | grep '^MNA_' || true; } | sort", runner)
+
+    def test_picmi_analytic_distribution_constants_are_expression_inputs_only(
+        self,
+    ) -> None:
+        source = (ROOT / "examples/lynx/input_template.py").read_text(
+            encoding="utf-8"
+        )
+        module = ast.parse(source)
+        geometry_constants = None
+        for node in module.body:
+            if isinstance(node, ast.Assign):
+                targets = [
+                    target.id
+                    for target in node.targets
+                    if isinstance(target, ast.Name)
+                ]
+                if targets == ["geometry_constants"] and isinstance(
+                    node.value, ast.Dict
+                ):
+                    geometry_constants = {
+                        key.value
+                        for key in node.value.keys
+                        if isinstance(key, ast.Constant)
+                    }
+                    break
+        self.assertIsNotNone(geometry_constants)
+        self.assertNotIn("L1", geometry_constants)
+        self.assertNotIn("r_head", geometry_constants)
 
 
 if __name__ == "__main__":
