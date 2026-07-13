@@ -2,10 +2,10 @@
 #SBATCH --job-name=mna_rz_smoke
 #SBATCH --partition=novas
 #SBATCH --nodes=1
-#SBATCH --ntasks=16
-#SBATCH --ntasks-per-node=16
+#SBATCH --ntasks=64
+#SBATCH --ntasks-per-node=64
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=16G
+#SBATCH --mem=128G
 #SBATCH --time=24:00:00
 #SBATCH --array=0-0
 #SBATCH --output=array_logs/%x_%A_%a.out
