@@ -69,7 +69,7 @@ class ContractTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertIn("#SBATCH --ntasks=64", submit)
         self.assertIn("#SBATCH --ntasks-per-node=64", submit)
-        self.assertIn("#SBATCH --mem=128G", submit)
+        self.assertIn("#SBATCH --mem=96G", submit)
 
     def test_lynx_field_dumps_are_windowed_for_io(self) -> None:
         campaign = json.loads(
