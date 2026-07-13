@@ -84,12 +84,16 @@ if nr <= 0 or nz <= 0:
 n_azimuthal_modes = 2
 cfl = env_float("MNA_CFL", 0.95)
 stop_time_s = env_float("MNA_STOP_TIME_S", 1.0e-12)
-field_diag_period = env_int("MNA_FIELD_DIAG_PERIOD", 100)
+field_diag_period = env_int("MNA_FIELD_DIAG_PERIOD", 250)
+field_diag_step_min = env_int("MNA_FIELD_DIAG_STEP_MIN", 1000)
+field_diag_step_max = env_int("MNA_FIELD_DIAG_STEP_MAX", 3500)
 probe_diag_period = env_int("MNA_PROBE_DIAG_PERIOD", 10)
 if stop_time_s < 1.0e-12:
     raise ValueError("campaign stop time must reach the 1 ps carbon objective")
 if field_diag_period <= 0 or probe_diag_period <= 0:
     raise ValueError("diagnostic periods must be positive")
+if not 0 <= field_diag_step_min < field_diag_step_max:
+    raise ValueError("field diagnostic step window must be ordered")
 
 diag_rmin = 0.0
 diag_rmax = env_float("MNA_DIAG_RMAX_M", 12.0e-6)
@@ -249,13 +253,16 @@ laser_antenna = picmi.LaserAntenna(
     normal_vector=[0.0, 0.0, 1.0],
 )
 
-# Ez-only, native-resolution, cropped diagnostics.  All RZ modes are dumped;
-# the analysis reconstructs them at theta=0.  HDF5 is retained only until the
-# workflow's manifest-based cleanup is explicitly confirmed.
+# Ez-only, native-resolution field diagnostics.  All RZ modes are dumped;
+# the analysis reconstructs them at theta=0.  To avoid I/O-bound runs, field
+# dumps are restricted to the objective window; the reduced carbon diagnostic
+# still runs through 1 ps.
 field_diagnostic = picmi.FieldDiagnostic(
     name="fields",
     grid=grid,
     period=field_diag_period,
+    step_min=field_diag_step_min,
+    step_max=field_diag_step_max,
     data_list=["Ez"],
     warpx_dump_rz_modes=1,
     write_dir="diags",
@@ -335,6 +342,8 @@ resolved = {
     },
     "field_diagnostic": {
         "period_steps": field_diag_period,
+        "step_min": field_diag_step_min,
+        "step_max": field_diag_step_max,
         "data": ["Ez"],
         "dump_all_rz_modes": True,
         "lower_bound_m": [rmin, zmin],
