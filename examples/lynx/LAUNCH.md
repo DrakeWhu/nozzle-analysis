@@ -45,6 +45,12 @@ python -m campaign_workflow.cli.materialize_cases \
   --campaign-root "${CAMPAIGN_ROOT}" --case-id 0 --dry-run --verbose
 python -m campaign_workflow.cli.materialize_cases \
   --campaign-root "${CAMPAIGN_ROOT}" --case-id 0 --verbose
+python -m campaign_workflow.cli.init_case_states \
+  --campaign-root "${CAMPAIGN_ROOT}" --case-id 0 --dry-run --verbose
+python -m campaign_workflow.cli.init_case_states \
+  --campaign-root "${CAMPAIGN_ROOT}" --case-id 0 --verbose
+python -m campaign_workflow.cli.init_case_states \
+  --campaign-root "${CAMPAIGN_ROOT}" --case-id 0 --check --verbose
 ```
 
 Submit the one array element.  Leave animation off until the core CSV/plot
