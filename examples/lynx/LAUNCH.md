@@ -31,7 +31,7 @@ Create the campaign from the versioned static files:
 
 ```bash
 export MNA_SOURCE="${HOME}/apps/src/mna-nozzle-analysis/examples/lynx"
-export CAMPAIGN_ROOT="${HOME}/campaigns/mna_nozzle_rz_smoke"
+export CAMPAIGN_ROOT="${HOME}/warpx_runs/mna_nozzle_rz_smoke"
 mkdir -p "${CAMPAIGN_ROOT}" "${CAMPAIGN_ROOT}/array_logs"
 cp "${MNA_SOURCE}/campaign.json" "${CAMPAIGN_ROOT}/"
 cp "${MNA_SOURCE}/cases.tsv" "${CAMPAIGN_ROOT}/"
@@ -71,3 +71,4 @@ The success criteria are:
 - `post/carbon_probe_timeseries.csv` reaches approximately 1000 fs;
 - the cleanup phase only prints a dry-run manifest and leaves every H5 file
   intact.
+
