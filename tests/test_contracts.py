@@ -76,6 +76,18 @@ class ContractTests(unittest.TestCase):
             script,
         )
 
+    def test_lynx_case_env_is_exported_to_python(self) -> None:
+        runner = (
+            ROOT / "examples/lynx/run_warpx_mna_case_lynx.sh"
+        ).read_text(encoding="utf-8")
+        analysis = (
+            ROOT / "examples/lynx/run_mna_case_analysis_lynx.sh"
+        ).read_text(encoding="utf-8")
+        for script in (runner, analysis):
+            self.assertIn("set -a\nsource", script)
+            self.assertIn("set +a", script)
+        self.assertIn("{ env | grep '^MNA_' || true; } | sort", runner)
+
 
 if __name__ == "__main__":
     unittest.main()
