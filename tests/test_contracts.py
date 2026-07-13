@@ -63,6 +63,33 @@ class ContractTests(unittest.TestCase):
         }
         self.assertTrue(objective_metrics.issubset(summary["required_columns"]))
 
+    def test_lynx_smoke_resources_are_not_tiny(self) -> None:
+        submit = (
+            ROOT / "examples/lynx/submit_mna_smoke_lynx.sh"
+        ).read_text(encoding="utf-8")
+        self.assertIn("#SBATCH --ntasks=64", submit)
+        self.assertIn("#SBATCH --ntasks-per-node=64", submit)
+        self.assertIn("#SBATCH --mem=128G", submit)
+
+    def test_lynx_field_dumps_are_windowed_for_io(self) -> None:
+        campaign = json.loads(
+            (ROOT / "examples/lynx/campaign.json").read_text(encoding="utf-8")
+        )
+        constants = campaign["case_materialization"]["env_constants"]
+        self.assertEqual(constants["MNA_FIELD_DIAG_PERIOD"], "250")
+        self.assertEqual(constants["MNA_FIELD_DIAG_STEP_MIN"], "1000")
+        self.assertEqual(constants["MNA_FIELD_DIAG_STEP_MAX"], "3500")
+
+    def test_lynx_raw_diagnostic_globs_match_warpx_openpmd_names(self) -> None:
+        campaign = json.loads(
+            (ROOT / "examples/lynx/campaign.json").read_text(encoding="utf-8")
+        )
+        raw = next(
+            item for item in campaign["raw_diagnostics"] if item["name"] == "fields_openpmd"
+        )
+        self.assertEqual(raw["glob"], "diags/openpmd*")
+        self.assertIn("diags/openpmd*", campaign["cleanup"]["raw_delete_globs"])
+
     def test_lynx_stale_diagnostic_literal_is_checked_explicitly(self) -> None:
         script = (
             ROOT / "examples/lynx/run_warpx_mna_case_lynx.sh"
@@ -76,6 +103,7 @@ class ContractTests(unittest.TestCase):
             "if [[ -e diags/reduced/carbon_probe_extrema.txt ]]; then",
             script,
         )
+        self.assertIn("existing_raw=(diags/openpmd* diags/*.h5 diags/*.hdf5)", script)
 
     def test_lynx_case_env_is_exported_to_python(self) -> None:
         runner = (
@@ -113,6 +141,7 @@ class ContractTests(unittest.TestCase):
         self.assertEqual(len(field_diagnostic_calls), 1)
         keywords = {keyword.arg for keyword in field_diagnostic_calls[0].keywords}
         self.assertFalse({"lower_bound", "upper_bound", "number_of_cells"} & keywords)
+        self.assertTrue({"step_min", "step_max"} <= keywords)
 
     def test_picmi_analytic_distribution_constants_are_expression_inputs_only(
         self,
