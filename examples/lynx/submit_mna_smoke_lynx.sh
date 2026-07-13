@@ -37,4 +37,4 @@ python -m campaign_workflow.cli.init_case_states \
     --case-id "${SLURM_ARRAY_TASK_ID}" \
     --verbose
 
-exec bash "${WORKFLOW_ROOT}/examples/sunrise/submit_case_cycle_array.sh"
+exec bash "${CAMPAIGN_ROOT}/run_mna_case_cycle_lynx.sh"
