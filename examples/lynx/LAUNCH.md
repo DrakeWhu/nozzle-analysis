@@ -52,7 +52,7 @@ contract passes; set `MNA_MAKE_ANIMATION=1` on a later rerun if desired.
 
 ```bash
 cd "${CAMPAIGN_ROOT}"
-sbatch --export=ALL,CAMPAIGN_ROOT="${CAMPAIGN_ROOT}" submit_mna_smoke_lynx.sh
+sbatch --export=ALL,CAMPAIGN_ROOT="${CAMPAIGN_ROOT}",WORKFLOW_ENV="${HOME}/apps/env/campaign_workflow_lynx.sh" submit_mna_smoke_lynx.sh
 ```
 
 The success criteria are:
