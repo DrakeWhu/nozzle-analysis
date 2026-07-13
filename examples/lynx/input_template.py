@@ -257,9 +257,6 @@ field_diagnostic = picmi.FieldDiagnostic(
     grid=grid,
     period=field_diag_period,
     data_list=["Ez"],
-    lower_bound=[diag_rmin, diag_zmin],
-    upper_bound=[diag_rmax, diag_zmax],
-    number_of_cells=[diag_nr, diag_nz],
     warpx_dump_rz_modes=1,
     write_dir="diags",
     warpx_file_prefix="openpmd",
@@ -340,9 +337,14 @@ resolved = {
         "period_steps": field_diag_period,
         "data": ["Ez"],
         "dump_all_rz_modes": True,
+        "lower_bound_m": [rmin, zmin],
+        "upper_bound_m": [rmax, zmax],
+        "number_of_cells": [nr, nz],
+    },
+    "analysis_roi": {
         "lower_bound_m": [diag_rmin, diag_zmin],
         "upper_bound_m": [diag_rmax, diag_zmax],
-        "number_of_cells": [diag_nr, diag_nz],
+        "number_of_cells_at_native_resolution": [diag_nr, diag_nz],
     },
 }
 Path("resolved_parameters.json").write_text(
