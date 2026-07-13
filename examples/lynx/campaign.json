@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "campaign_name": "mna_nozzle_rz_smoke",
+  "description": "WarpX RZ aluminium micronozzle campaign with C12 6+ and Ez objectives.",
+  "case_manifest": "cases.tsv",
+  "case_manifest_format": "tsv",
+  "case_id_column": "CASE_ID",
+  "case_name_column": "CASE_NAME",
+  "simulation": {
+    "backend": "warpx_picmi",
+    "scheduler": "slurm",
+    "input_script": "input.py",
+    "completion_marker": "post/sim_done.json",
+    "failure_marker": "post/sim_failed.json"
+  },
+  "case_materialization": {
+    "input_template": "input_template.py",
+    "input_name": "input.py",
+    "env_name": "case.env",
+    "env_columns": [
+      {
+        "column": "CASE_ID",
+        "env": "MNA_CASE_ID",
+        "required": true
+      },
+      {
+        "column": "CASE_NAME",
+        "env": "MNA_CASE_NAME",
+        "required": true
+      },
+      {
+        "column": "L1_UM",
+        "env": "MNA_L1_M",
+        "required": true,
+        "scale": "1e-6"
+      },
+      {
+        "column": "L2_UM",
+        "env": "MNA_L2_M",
+        "required": true,
+        "scale": "1e-6"
+      },
+      {
+        "column": "WALL_UM",
+        "env": "MNA_WALL_M",
+        "required": true,
+        "scale": "1e-6"
+      },
+      {
+        "column": "R_HEAD_UM",
+        "env": "MNA_R_HEAD_M",
+        "required": true,
+        "scale": "1e-6"
+      },
+      {
+        "column": "R_NECK_UM",
+        "env": "MNA_R_NECK_M",
+        "required": true,
+        "scale": "1e-6"
+      },
+      {
+        "column": "R_EXIT_UM",
+        "env": "MNA_R_EXIT_M",
+        "required": true,
+        "scale": "1e-6"
+      }
+    ],
+    "env_constants": {
+      "MNA_Z_NECK_M": "0.0",
+      "MNA_STOP_TIME_S": "1.0e-12",
+      "MNA_CELL_SIZE_M": "5.0e-8",
+      "MNA_FIELD_DIAG_PERIOD": "100",
+      "MNA_PROBE_DIAG_PERIOD": "10"
+    }
+  },
+  "raw_diagnostics": [
+    {
+      "name": "fields_openpmd",
+      "kind": "openpmd_hdf5",
+      "path": "diags",
+      "glob": "diags/*.h5",
+      "allowed_suffixes": [".h5", ".hdf5"],
+      "min_files": 1,
+      "min_age_seconds": 0,
+      "required": true
+    }
+  ],
+  "analysis": {
+    "name": "mna_nozzle_carbon_and_ez",
+    "kind": "command",
+    "adapter": "command",
+    "inputs": ["fields_openpmd"],
+    "command": [
+      "bash",
+      "{campaign_root}/run_mna_case_analysis_lynx.sh",
+      "{case_dir}"
+    ],
+    "outputs": [
+      {
+        "name": "mna_case_summary",
+        "kind": "csv",
+        "path": "post/mna_case_summary.csv",
+        "min_rows": 1,
+        "required_columns": [
+          "analysis_status",
+          "case_id",
+          "case_name",
+          "objective_carbon_delta_kz_1ps_MeV",
+          "objective_exit_ez_p995_peak_100_300fs_V_m",
+          "carbon_target_actual_fs",
+          "exit_ez_peak_time_fs",
+          "n_macroparticles_selected",
+          "charge_selected_pC"
+        ],
+        "required": true
+      },
+      {
+        "name": "carbon_probe_timeseries",
+        "kind": "csv",
+        "path": "post/carbon_probe_timeseries.csv",
+        "min_rows": 2,
+        "required_columns": [
+          "step",
+          "time_s",
+          "time_fs",
+          "z_um",
+          "pz_over_mc",
+          "kinetic_energy_MeV",
+          "kinetic_energy_from_pz_MeV"
+        ],
+        "required": true
+      },
+      {
+        "name": "mna_field_timeseries",
+        "kind": "csv",
+        "path": "post/mna_field_timeseries.csv",
+        "min_rows": 3,
+        "required_columns": [
+          "iteration",
+          "time_s",
+          "time_fs",
+          "region",
+          "n_cells",
+          "max_abs_Ez_V_m",
+          "p995_abs_Ez_V_m",
+          "rms_Ez_V_m"
+        ],
+        "required": true
+      },
+      {
+        "name": "carbon_energy_plot",
+        "kind": "file",
+        "path": "post/plots/carbon_probe_energy_vs_time.png",
+        "allowed_suffixes": [".png"],
+        "min_bytes": 1,
+        "required": true
+      },
+      {
+        "name": "field_metrics_plot",
+        "kind": "file",
+        "path": "post/plots/mna_field_metrics_vs_time.png",
+        "allowed_suffixes": [".png"],
+        "min_bytes": 1,
+        "required": true
+      },
+      {
+        "name": "peak_ez_plot",
+        "kind": "file",
+        "path": "post/plots/mna_peak_exit_Ez.png",
+        "allowed_suffixes": [".png"],
+        "min_bytes": 1,
+        "required": true
+      },
+      {
+        "name": "ez_animation",
+        "kind": "file",
+        "path": "post/plots/mna_Ez_all_frames.mp4",
+        "allowed_suffixes": [".mp4"],
+        "min_bytes": 1,
+        "required": false
+      }
+    ]
+  },
+  "cleanup": {
+    "raw_delete_globs": [
+      "diags/*.h5",
+      "diags/*.hdf5"
+    ],
+    "require_raw_validated": true,
+    "require_reduced_validated": true,
+    "require_delete_manifest": true,
+    "allow_directory_delete": false
+  },
+  "storage": {
+    "snapshot_dir": "snapshots",
+    "reservation_dir": "reservations",
+    "events_dir": "events"
+  },
+  "state": {
+    "state_file": "state.json",
+    "validation_file": "validation.json",
+    "locks_dir": "locks",
+    "manifests_dir": "manifests",
+    "post_dir": "post"
+  }
+}
+

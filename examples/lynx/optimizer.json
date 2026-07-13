@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "problem": {
+    "kind": "multichannel"
+  },
+  "optimizer_run_root": "optimizer_runs",
+  "source_campaigns": [],
+  "optimization_history": {
+    "enabled": true,
+    "optimization_name": "mna_nozzle_rz",
+    "iterations_root": "iterations",
+    "cases_tsv": "cases.tsv",
+    "campaign_name_template": "{optimization_name}_iter_{iteration:03d}",
+    "reduced_outputs": {
+      "particle_summary": "post/mna_case_summary.csv"
+    }
+  },
+  "parameter_space": {
+    "version": 1,
+    "parameters": [
+      {
+        "name": "L1_um",
+        "column": "L1_UM",
+        "type": "float",
+        "bounds": [2.5, 4.5]
+      },
+      {
+        "name": "L2_um",
+        "column": "L2_UM",
+        "type": "float",
+        "bounds": [7.0, 14.0]
+      },
+      {
+        "name": "wall_um",
+        "column": "WALL_UM",
+        "type": "float",
+        "bounds": [0.3, 1.0]
+      },
+      {
+        "name": "r_head_um",
+        "column": "R_HEAD_UM",
+        "type": "float",
+        "bounds": [2.2, 3.4]
+      },
+      {
+        "name": "r_neck_um",
+        "column": "R_NECK_UM",
+        "type": "float",
+        "bounds": [1.0, 1.8]
+      },
+      {
+        "name": "r_exit_um",
+        "column": "R_EXIT_UM",
+        "type": "float",
+        "bounds": [4.5, 8.0]
+      }
+    ],
+    "reference": {
+      "L1_um": 3.1,
+      "L2_um": 9.9,
+      "wall_um": 0.6,
+      "r_head_um": 2.65,
+      "r_neck_um": 1.4,
+      "r_exit_um": 6.0
+    }
+  },
+  "objective": {
+    "schema_version": 1,
+    "config_id": "mna_carbon_kz_and_exit_ez_v1",
+    "objectives": [
+      {
+        "name": "carbon_delta_kz_1ps",
+        "metric": "objective_carbon_delta_kz_1ps_MeV",
+        "sense": "max",
+        "transform": "identity"
+      },
+      {
+        "name": "exit_ez_p995_100_300fs",
+        "metric": "objective_exit_ez_p995_peak_100_300fs_V_m",
+        "sense": "max",
+        "transform": "identity"
+      }
+    ],
+    "eligibility": {
+      "minimum_selected_macroparticles": 1,
+      "require_positive_charge": true,
+      "require_finite_parameters": true
+    }
+  },
+  "recommendation": {
+    "backend": "sobol_then_morbo",
+    "suggestion_mode": "regional_model",
+    "seed": 20260713,
+    "n_candidates": 4,
+    "min_observations": null,
+    "initial_design": {
+      "include_reference": true,
+      "sobol_points": 16,
+      "initial_batch_size": 8,
+      "continuation_batch_size": 4,
+      "seed": 20260713
+    },
+    "regional_policy": {
+      "max_regions": 3,
+      "initial_radius": 0.25,
+      "min_radius": 0.05,
+      "max_radius": 0.5,
+      "expansion_factor": 1.2,
+      "contraction_factor": 0.7,
+      "restart_failure_threshold": 3,
+      "local_min_observations": 3
+    },
+    "categorical_policy": {
+      "mode": "fixed",
+      "epsilon": 0.0
+    },
+    "botorch": {
+      "enabled": true,
+      "fallback_to_random": true,
+      "candidate_pool_size_per_region": 512,
+      "mc_samples": 128,
+      "fit_maxiter": 100
+    }
+  },
+  "candidate_batch": {
+    "case_id_start": 0,
+    "write_fields_for_reference": true,
+    "campaign_template": {
+      "campaign_json": "campaign.json",
+      "input_template": "input_template.py"
+    }
+  },
+  "validation": {
+    "require_case_validation": true
+  }
+}
+

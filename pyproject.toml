@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mna-nozzle-analysis"
+version = "0.1.0"
+description = "RZ WarpX analysis and campaign adapter for the MNA aluminium micronozzle."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "matplotlib>=3.7",
+  "numpy>=1.24",
+  "openPMD-viewer>=1.10",
+]
+
+[project.optional-dependencies]
+animation = ["imageio-ffmpeg>=0.4.9"]
+test = []
+
+[project.scripts]
+mna-nozzle = "mna_nozzle_analysis.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
