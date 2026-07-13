@@ -98,6 +98,22 @@ class ContractTests(unittest.TestCase):
         self.assertIn('srun)', runner)
         self.assertNotIn('srun -n "${SLURM_NTASKS}" python -u input.py', runner)
 
+    def test_field_diagnostic_avoids_warpx_2603_crop_coarsening(self) -> None:
+        source = (ROOT / "examples/lynx/input_template.py").read_text(
+            encoding="utf-8"
+        )
+        module = ast.parse(source)
+        field_diagnostic_calls = []
+        for node in ast.walk(module):
+            if not isinstance(node, ast.Call):
+                continue
+            func = node.func
+            if isinstance(func, ast.Attribute) and func.attr == "FieldDiagnostic":
+                field_diagnostic_calls.append(node)
+        self.assertEqual(len(field_diagnostic_calls), 1)
+        keywords = {keyword.arg for keyword in field_diagnostic_calls[0].keywords}
+        self.assertFalse({"lower_bound", "upper_bound", "number_of_cells"} & keywords)
+
     def test_picmi_analytic_distribution_constants_are_expression_inputs_only(
         self,
     ) -> None:
