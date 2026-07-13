@@ -110,13 +110,13 @@ run_phase() {
     set +e
     "$@" > >(tee -a "${stdout_log}") 2> >(tee -a "${stderr_log}" >&2)
     rc=$?
-    set -e
 
     if [[ "${rc}" -ne 0 ]]; then
         echo "[MNA-CYCLE] FAIL phase=${phase_name} return_code=${rc}" >&2
         return "${rc}"
     fi
 
+    set -e
     echo "[MNA-CYCLE] END phase=${phase_name}"
     return 0
 }
@@ -227,3 +227,4 @@ else
 fi
 
 echo "[MNA-CYCLE] DONE: case_id=${CASE_ID} case_name=${CASE_NAME}"
+
