@@ -5,11 +5,20 @@ micronozzle simulated with WarpX in quasi-cylindrical RZ geometry.
 
 The two optimization metrics are deliberately narrow:
 
-1. `objective_carbon_delta_kz_1ps_MeV`: longitudinal kinetic-energy gain of
-   the non-depositing C12 6+ probe at 1 ps.
+1. `objective_carbon_terminal_delta_kz_MeV`: longitudinal kinetic-energy gain
+   of the non-depositing C12 6+ probe between its initial state and its last
+   physical `ParticleExtrema` sample.  The terminal sample is either the end of
+   the simulation or the final sample immediately before the probe leaves an
+   absorbing particle boundary.
 2. `objective_exit_ez_p995_peak_100_300fs_V_m`: maximum, between 100 and
    300 fs, of the 99.5th percentile of `abs(Ez)` in the first 5 microns
    downstream of the nozzle exit and within the exit radius.
+
+The carbon objective uses only the kinetic energy associated with `pz`; total
+kinetic energy, terminal time, position, trajectory angle, sampling gap and
+loss reason are retained as QA.  WarpX empty-species min/max sentinels are
+accepted only as a trailing suffix.  A disappearance is classified against the
+resolved radial and axial domain boundaries with a two-cell tolerance.
 
 The field objective uses all dumped RZ modes reconstructed at `theta=0`, the
 laser-polarization plane.  The 99.5th percentile is the optimization value;
