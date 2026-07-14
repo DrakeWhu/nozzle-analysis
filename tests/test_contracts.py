@@ -87,8 +87,13 @@ class ContractTests(unittest.TestCase):
         raw = next(
             item for item in campaign["raw_diagnostics"] if item["name"] == "fields_openpmd"
         )
-        self.assertEqual(raw["glob"], "diags/openpmd*")
-        self.assertIn("diags/openpmd*", campaign["cleanup"]["raw_delete_globs"])
+        self.assertEqual(raw["glob"], "diags/**/openpmd*.h5")
+        self.assertIn(
+            "diags/**/openpmd*.h5", campaign["cleanup"]["raw_delete_globs"]
+        )
+        self.assertIn(
+            "diags/**/openpmd*.hdf5", campaign["cleanup"]["raw_delete_globs"]
+        )
 
     def test_lynx_stale_diagnostic_literal_is_checked_explicitly(self) -> None:
         script = (
