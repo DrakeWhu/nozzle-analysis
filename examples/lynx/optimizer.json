@@ -22,37 +22,55 @@
         "name": "L1_um",
         "column": "L1_UM",
         "type": "float",
-        "bounds": [2.5, 4.5]
+        "bounds": [
+          2.5,
+          4.5
+        ]
       },
       {
         "name": "L2_um",
         "column": "L2_UM",
         "type": "float",
-        "bounds": [7.0, 14.0]
+        "bounds": [
+          7.0,
+          14.0
+        ]
       },
       {
         "name": "wall_um",
         "column": "WALL_UM",
         "type": "float",
-        "bounds": [0.3, 1.0]
+        "bounds": [
+          0.3,
+          1.0
+        ]
       },
       {
         "name": "r_head_um",
         "column": "R_HEAD_UM",
         "type": "float",
-        "bounds": [2.2, 3.4]
+        "bounds": [
+          2.2,
+          3.4
+        ]
       },
       {
         "name": "r_neck_um",
         "column": "R_NECK_UM",
         "type": "float",
-        "bounds": [1.0, 1.8]
+        "bounds": [
+          1.0,
+          1.8
+        ]
       },
       {
         "name": "r_exit_um",
         "column": "R_EXIT_UM",
         "type": "float",
-        "bounds": [4.5, 8.0]
+        "bounds": [
+          4.5,
+          8.0
+        ]
       }
     ],
     "reference": {
@@ -128,7 +146,8 @@
     "campaign_template": {
       "campaign_json": "campaign.json",
       "input_template": "input_template.py"
-    }
+    },
+    "write_fields_for_all": true
   },
   "validation": {
     "require_case_validation": true

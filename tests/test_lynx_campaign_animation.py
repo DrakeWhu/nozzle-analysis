@@ -33,6 +33,17 @@ class LynxCampaignAnimationTests(unittest.TestCase):
         self.assertIn("run_mna_case_analysis_lynx.sh", command)
         self.assertIn("{case_dir}", command)
 
+
+    def test_optimizer_requests_fields_for_all_candidates(self) -> None:
+        optimizer = json.loads(
+            (
+                ROOT / "examples/lynx/optimizer.json"
+            ).read_text(encoding="utf-8")
+        )
+
+        batch = optimizer["candidate_batch"]
+        self.assertTrue(batch["write_fields_for_all"])
+
     def test_iteration_wrapper_selects_mna_runner(self) -> None:
         wrapper = (
             ROOT / "examples/lynx/run_mna_iteration_array_lynx.sh"
