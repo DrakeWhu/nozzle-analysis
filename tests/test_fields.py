@@ -1,11 +1,53 @@
 from __future__ import annotations
 
+import tempfile
 import unittest
+from pathlib import Path
 
 import numpy as np
 
-from mna_nozzle_analysis.fields import FieldFrame, frame_metrics, select_field_objective
+from mna_nozzle_analysis.fields import (
+    FieldFrame,
+    _resolve_openpmd_h5_directory,
+    frame_metrics,
+    select_field_objective,
+)
 from mna_nozzle_analysis.geometry import NozzleGeometry
+
+
+class OpenPMDDirectoryTests(unittest.TestCase):
+    def test_direct_h5_files_take_precedence(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "openpmd_000000.h5").touch()
+            nested = root / "nested"
+            nested.mkdir()
+            (nested / "openpmd_000100.h5").touch()
+            self.assertEqual(_resolve_openpmd_h5_directory(root), root.resolve())
+
+    def test_unique_nested_h5_directory_is_resolved(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            nested = root / "openpmd"
+            nested.mkdir()
+            (nested / "openpmd_000000.h5").touch()
+            (nested / "openpmd_000100.h5").touch()
+            self.assertEqual(_resolve_openpmd_h5_directory(root), nested.resolve())
+
+    def test_multiple_nested_h5_directories_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in ("first", "second"):
+                nested = root / name
+                nested.mkdir()
+                (nested / "openpmd_000000.h5").touch()
+            with self.assertRaisesRegex(ValueError, "multiple directories"):
+                _resolve_openpmd_h5_directory(root)
+
+    def test_missing_h5_files_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(FileNotFoundError, "no openPMD .h5 files"):
+                _resolve_openpmd_h5_directory(directory)
 
 
 class FieldMetricTests(unittest.TestCase):
@@ -55,4 +97,3 @@ class FieldMetricTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
