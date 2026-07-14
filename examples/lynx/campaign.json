@@ -80,7 +80,7 @@
       "name": "fields_openpmd",
       "kind": "openpmd_hdf5",
       "path": "diags",
-      "glob": "diags/openpmd*",
+      "glob": "diags/**/openpmd*.h5",
       "min_files": 1,
       "min_age_seconds": 0,
       "required": true
@@ -184,9 +184,8 @@
   },
   "cleanup": {
     "raw_delete_globs": [
-      "diags/openpmd*",
-      "diags/*.h5",
-      "diags/*.hdf5"
+      "diags/**/openpmd*.h5",
+      "diags/**/openpmd*.hdf5"
     ],
     "require_raw_validated": true,
     "require_reduced_validated": true,
