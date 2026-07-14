@@ -3,7 +3,6 @@ from __future__ import annotations
 import csv
 import tempfile
 import unittest
-from pathlib import Path
 
 from mna_nozzle_analysis.analysis import analyze_case
 from mna_nozzle_analysis.synthetic import write_synthetic_case
@@ -19,8 +18,9 @@ class EndToEndTests(unittest.TestCase):
             )
             self.assertEqual(summary["analysis_status"], "ok")
             self.assertAlmostEqual(
-                summary["objective_carbon_delta_kz_1ps_MeV"], 4.0, places=7
+                summary["objective_carbon_terminal_delta_kz_MeV"], 4.0, places=7
             )
+            self.assertEqual(summary["carbon_terminal_reason"], "simulation_end")
             self.assertEqual(summary["exit_ez_peak_time_fs"], 200.0)
             required = (
                 "post/mna_case_summary.csv",
@@ -37,10 +37,10 @@ class EndToEndTests(unittest.TestCase):
                 encoding="utf-8", newline=""
             ) as stream:
                 row = next(csv.DictReader(stream))
-            self.assertTrue(row["objective_carbon_delta_kz_1ps_MeV"])
+            self.assertTrue(row["objective_carbon_terminal_delta_kz_MeV"])
+            self.assertTrue(row["carbon_terminal_reason"])
             self.assertTrue(row["objective_exit_ez_p995_peak_100_300fs_V_m"])
 
 
 if __name__ == "__main__":
     unittest.main()
-
