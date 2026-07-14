@@ -19,6 +19,40 @@ class FieldFrame:
     transverse_name: str
 
 
+def _resolve_openpmd_h5_directory(diagnostics_dir: str | Path) -> Path:
+    """Return the unique directory that directly contains openPMD HDF5 files.
+
+    openPMD-viewer inspects only the directory passed to OpenPMDTimeSeries.
+    WarpX campaigns may place the files one level deeper, for example
+    ``diags/openpmd/openpmd_000000.h5``. Direct files take precedence. If no
+    direct files exist, exactly one recursively discovered parent directory is
+    accepted; multiple parents are rejected as ambiguous.
+    """
+
+    root = Path(diagnostics_dir).expanduser().resolve()
+    if not root.is_dir():
+        raise FileNotFoundError(f"openPMD diagnostics directory does not exist: {root}")
+
+    if any(root.glob("*.h5")):
+        return root
+
+    parents = sorted(
+        {path.parent.resolve() for path in root.rglob("*.h5")},
+        key=lambda path: str(path),
+    )
+    if not parents:
+        raise FileNotFoundError(
+            f"no openPMD .h5 files found in {root} or its subdirectories"
+        )
+    if len(parents) > 1:
+        formatted = ", ".join(str(path) for path in parents)
+        raise ValueError(
+            "openPMD HDF5 files were found in multiple directories; "
+            f"pass one dataset directory explicitly: {formatted}"
+        )
+    return parents[0]
+
+
 def _orient_field(data: Any, info: Any) -> tuple[np.ndarray, np.ndarray, np.ndarray, str]:
     field = np.squeeze(np.asarray(data))
     if field.ndim != 2:
@@ -60,7 +94,8 @@ def iter_openpmd_ez_frames(
             "openPMD-viewer is required for WarpX HDF5 analysis; install the package"
         ) from exc
 
-    series = OpenPMDTimeSeries(str(diagnostics_dir))
+    dataset_dir = _resolve_openpmd_h5_directory(diagnostics_dir)
+    series = OpenPMDTimeSeries(str(dataset_dir))
     iterations = [int(value) for value in series.iterations]
     times = np.asarray(series.t, dtype=float)
     if len(iterations) != len(times):
@@ -203,4 +238,3 @@ def select_field_objective(
             "no finite exit/downstream Ez frame falls inside the objective window"
         )
     return max(candidates, key=lambda row: float(row["p995_abs_Ez_V_m"]))
-
