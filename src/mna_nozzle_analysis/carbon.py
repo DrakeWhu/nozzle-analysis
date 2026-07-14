@@ -33,6 +33,17 @@ PARTICLE_EXTREMA_COLUMNS = (
     "weight_max",
 )
 
+_EXTREMA_PAIRS = (
+    (2, 3, "x"),
+    (4, 5, "y"),
+    (6, 7, "z"),
+    (8, 9, "px"),
+    (10, 11, "py"),
+    (12, 13, "pz"),
+    (14, 15, "gamma"),
+    (16, 17, "weight"),
+)
+
 
 @dataclass(frozen=True)
 class CarbonTargetMetric:
@@ -47,21 +58,36 @@ class CarbonTargetMetric:
 
 
 def _single_probe_check(raw: np.ndarray) -> None:
-    pairs = (
-        (2, 3, "x"),
-        (4, 5, "y"),
-        (6, 7, "z"),
-        (8, 9, "px"),
-        (10, 11, "py"),
-        (12, 13, "pz"),
-        (14, 15, "gamma"),
-        (16, 17, "weight"),
-    )
-    for low, high, label in pairs:
+    for low, high, label in _EXTREMA_PAIRS:
         if not np.allclose(raw[:, low], raw[:, high], rtol=1.0e-10, atol=1.0e-30):
             raise ValueError(
                 f"ParticleExtrema does not describe one probe: {label} min/max differ"
             )
+
+
+def _strip_trailing_empty_probe_rows(raw: np.ndarray) -> np.ndarray:
+    """Remove WarpX ParticleExtrema rows emitted after the species becomes empty.
+
+    AMReX min/max reductions over an empty particle container retain opposite
+    extrema sentinels: every minimum is greater than its corresponding maximum.
+    In text output, the largest sentinels can parse as +/-inf. Only a trailing
+    suffix with this signature is accepted; any other non-finite or malformed
+    row remains a hard data error.
+    """
+    empty_mask = np.logical_and.reduce(
+        [raw[:, low] > raw[:, high] for low, high, _ in _EXTREMA_PAIRS]
+    )
+    if not np.any(empty_mask):
+        return raw
+
+    first_empty = int(np.flatnonzero(empty_mask)[0])
+    if not np.all(empty_mask[first_empty:]):
+        raise ValueError(
+            "ParticleExtrema empty-probe rows must form a trailing suffix"
+        )
+    if first_empty == 0:
+        raise ValueError("ParticleExtrema contains no samples with the probe present")
+    return raw[:first_empty]
 
 
 def read_particle_extrema(
@@ -75,6 +101,9 @@ def read_particle_extrema(
             f"expected {len(PARTICLE_EXTREMA_COLUMNS)} ParticleExtrema columns, "
             f"got shape={raw.shape}"
         )
+    if not np.all(np.isfinite(raw[:, :2])):
+        raise ValueError("ParticleExtrema step/time contains non-finite values")
+    raw = _strip_trailing_empty_probe_rows(raw)
     if not np.all(np.isfinite(raw)):
         raise ValueError("ParticleExtrema contains non-finite values")
     if np.any(np.diff(raw[:, 1]) < 0.0):
@@ -147,4 +176,3 @@ def carbon_target_metric(
         target_total_kinetic_MeV=float(target["kinetic_energy_MeV"]),
         target_pz_over_mc=float(target["pz_over_mc"]),
     )
-
