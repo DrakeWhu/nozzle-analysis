@@ -18,14 +18,52 @@
     "input_name": "input.py",
     "env_name": "case.env",
     "env_columns": [
-      {"column": "CASE_ID", "env": "MNA_CASE_ID", "required": true},
-      {"column": "CASE_NAME", "env": "MNA_CASE_NAME", "required": true},
-      {"column": "L1_UM", "env": "MNA_L1_M", "required": true, "scale": "1e-6"},
-      {"column": "L2_UM", "env": "MNA_L2_M", "required": true, "scale": "1e-6"},
-      {"column": "WALL_UM", "env": "MNA_WALL_M", "required": true, "scale": "1e-6"},
-      {"column": "R_HEAD_UM", "env": "MNA_R_HEAD_M", "required": true, "scale": "1e-6"},
-      {"column": "R_NECK_UM", "env": "MNA_R_NECK_M", "required": true, "scale": "1e-6"},
-      {"column": "R_EXIT_UM", "env": "MNA_R_EXIT_M", "required": true, "scale": "1e-6"}
+      {
+        "column": "CASE_ID",
+        "env": "MNA_CASE_ID",
+        "required": true
+      },
+      {
+        "column": "CASE_NAME",
+        "env": "MNA_CASE_NAME",
+        "required": true
+      },
+      {
+        "column": "L1_UM",
+        "env": "MNA_L1_M",
+        "required": true,
+        "scale": "1e-6"
+      },
+      {
+        "column": "L2_UM",
+        "env": "MNA_L2_M",
+        "required": true,
+        "scale": "1e-6"
+      },
+      {
+        "column": "WALL_UM",
+        "env": "MNA_WALL_M",
+        "required": true,
+        "scale": "1e-6"
+      },
+      {
+        "column": "R_HEAD_UM",
+        "env": "MNA_R_HEAD_M",
+        "required": true,
+        "scale": "1e-6"
+      },
+      {
+        "column": "R_NECK_UM",
+        "env": "MNA_R_NECK_M",
+        "required": true,
+        "scale": "1e-6"
+      },
+      {
+        "column": "R_EXIT_UM",
+        "env": "MNA_R_EXIT_M",
+        "required": true,
+        "scale": "1e-6"
+      }
     ],
     "env_constants": {
       "MNA_Z_NECK_M": "0.0",
@@ -34,7 +72,8 @@
       "MNA_FIELD_DIAG_PERIOD": "250",
       "MNA_FIELD_DIAG_STEP_MIN": "1000",
       "MNA_FIELD_DIAG_STEP_MAX": "3500",
-      "MNA_PROBE_DIAG_PERIOD": "10"
+      "MNA_PROBE_DIAG_PERIOD": "10",
+      "MNA_MAKE_ANIMATION": "1"
     }
   },
   "raw_diagnostics": [
@@ -52,8 +91,14 @@
     "name": "mna_nozzle_carbon_and_ez",
     "kind": "command",
     "adapter": "command",
-    "inputs": ["fields_openpmd"],
-    "command": ["bash", "{campaign_root}/run_mna_case_analysis_lynx.sh", "{case_dir}"],
+    "inputs": [
+      "fields_openpmd"
+    ],
+    "command": [
+      "bash",
+      "-lc",
+      "exec bash \"$HOME/apps/src/mna-nozzle-analysis/examples/lynx/run_mna_case_analysis_lynx.sh\" \"{case_dir}\""
+    ],
     "outputs": [
       {
         "name": "mna_case_summary",
@@ -83,9 +128,15 @@
         "path": "post/carbon_probe_timeseries.csv",
         "min_rows": 2,
         "required_columns": [
-          "step", "time_s", "time_fs", "r_um", "z_um",
-          "pz_over_mc", "trajectory_angle_deg",
-          "kinetic_energy_MeV", "kinetic_energy_from_pz_MeV"
+          "step",
+          "time_s",
+          "time_fs",
+          "r_um",
+          "z_um",
+          "pz_over_mc",
+          "trajectory_angle_deg",
+          "kinetic_energy_MeV",
+          "kinetic_energy_from_pz_MeV"
         ],
         "required": true
       },
@@ -95,24 +146,79 @@
         "path": "post/mna_field_timeseries.csv",
         "min_rows": 3,
         "required_columns": [
-          "iteration", "time_s", "time_fs", "region", "n_cells",
-          "max_abs_Ez_V_m", "p995_abs_Ez_V_m", "rms_Ez_V_m"
+          "iteration",
+          "time_s",
+          "time_fs",
+          "region",
+          "n_cells",
+          "max_abs_Ez_V_m",
+          "p995_abs_Ez_V_m",
+          "rms_Ez_V_m"
         ],
         "required": true
       },
-      {"name": "carbon_energy_plot", "kind": "file", "path": "post/plots/carbon_probe_energy_vs_time.png", "allowed_suffixes": [".png"], "min_bytes": 1, "required": true},
-      {"name": "field_metrics_plot", "kind": "file", "path": "post/plots/mna_field_metrics_vs_time.png", "allowed_suffixes": [".png"], "min_bytes": 1, "required": true},
-      {"name": "peak_ez_plot", "kind": "file", "path": "post/plots/mna_peak_exit_Ez.png", "allowed_suffixes": [".png"], "min_bytes": 1, "required": true},
-      {"name": "ez_animation", "kind": "file", "path": "post/plots/mna_Ez_all_frames.mp4", "allowed_suffixes": [".mp4"], "min_bytes": 1, "required": false}
+      {
+        "name": "carbon_energy_plot",
+        "kind": "file",
+        "path": "post/plots/carbon_probe_energy_vs_time.png",
+        "allowed_suffixes": [
+          ".png"
+        ],
+        "min_bytes": 1,
+        "required": true
+      },
+      {
+        "name": "field_metrics_plot",
+        "kind": "file",
+        "path": "post/plots/mna_field_metrics_vs_time.png",
+        "allowed_suffixes": [
+          ".png"
+        ],
+        "min_bytes": 1,
+        "required": true
+      },
+      {
+        "name": "peak_ez_plot",
+        "kind": "file",
+        "path": "post/plots/mna_peak_exit_Ez.png",
+        "allowed_suffixes": [
+          ".png"
+        ],
+        "min_bytes": 1,
+        "required": true
+      },
+      {
+        "name": "ez_animation",
+        "kind": "file",
+        "path": "post/plots/mna_Ez_all_frames.mp4",
+        "allowed_suffixes": [
+          ".mp4"
+        ],
+        "min_bytes": 1,
+        "required": true
+      }
     ]
   },
   "cleanup": {
-    "raw_delete_globs": ["diags/**/openpmd*.h5", "diags/**/openpmd*.hdf5"],
+    "raw_delete_globs": [
+      "diags/**/openpmd*.h5",
+      "diags/**/openpmd*.hdf5"
+    ],
     "require_raw_validated": true,
     "require_reduced_validated": true,
     "require_delete_manifest": true,
     "allow_directory_delete": false
   },
-  "storage": {"snapshot_dir": "snapshots", "reservation_dir": "reservations", "events_dir": "events"},
-  "state": {"state_file": "state.json", "validation_file": "validation.json", "locks_dir": "locks", "manifests_dir": "manifests", "post_dir": "post"}
+  "storage": {
+    "snapshot_dir": "snapshots",
+    "reservation_dir": "reservations",
+    "events_dir": "events"
+  },
+  "state": {
+    "state_file": "state.json",
+    "validation_file": "validation.json",
+    "locks_dir": "locks",
+    "manifests_dir": "manifests",
+    "post_dir": "post"
+  }
 }
