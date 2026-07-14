@@ -66,11 +66,11 @@
   },
   "objective": {
     "schema_version": 1,
-    "config_id": "mna_carbon_kz_and_exit_ez_v1",
+    "config_id": "mna_carbon_terminal_kz_and_exit_ez_v2",
     "objectives": [
       {
-        "name": "carbon_delta_kz_1ps",
-        "metric": "objective_carbon_delta_kz_1ps_MeV",
+        "name": "carbon_terminal_delta_kz",
+        "metric": "objective_carbon_terminal_delta_kz_MeV",
         "sense": "max",
         "transform": "identity"
       },
@@ -134,4 +134,3 @@
     "require_case_validation": true
   }
 }
-
