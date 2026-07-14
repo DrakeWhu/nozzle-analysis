@@ -42,6 +42,13 @@ def write_synthetic_case(destination: str | Path) -> Path:
             "charge_C": 6.0 * ELEMENTARY_CHARGE_C,
             "initial_energy_eV": 5.0e3,
         },
+        "grid": {
+            "cell_size_m": 50.0e-9,
+            "rmin_m": 0.0,
+            "rmax_m": 20.0e-6,
+            "zmin_m": -15.0e-6,
+            "zmax_m": 85.0e-6,
+        },
     }
     (root / "resolved_parameters.json").write_text(
         json.dumps(resolved, indent=2, sort_keys=True) + "\n",
@@ -98,4 +105,3 @@ def write_synthetic_case(destination: str | Path) -> Path:
         z_m=z_axis,
     )
     return root
-
