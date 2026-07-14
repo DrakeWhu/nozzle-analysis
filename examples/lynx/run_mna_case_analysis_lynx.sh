@@ -53,12 +53,11 @@ python -m mna_nozzle_analysis.cli analyze-case "${CASE_DIR}" \
     --parameters resolved_parameters.json \
     --output-dir post \
     --theta-rad 0.0 \
-    --target-time-fs 1000 \
-    --target-tolerance-fs 25 \
     --field-window-start-fs 100 \
     --field-window-end-fs 300 \
     --near-wall-um 0.5 \
     --exit-band-um 5.0 \
+    --terminal-boundary-tolerance-cells 2.0 \
     "${animation_args[@]}"
 
 test -s "${CASE_DIR}/post/mna_case_summary.csv"
