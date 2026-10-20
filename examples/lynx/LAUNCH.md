@@ -1,8 +1,11 @@
-# Audited Lynx smoke launch
+# Lynx smoke launch procedure
 
 This is a one-case reference run.  The commands intentionally perform a
 materialization dry run before writing case files and keep HDF5 cleanup in
 dry-run mode after successful analysis.
+
+This is a procedure, not evidence that a run was completed. The 2026-10-20
+Cloud baseline did not launch WarpX or SLURM.
 
 Assumptions:
 
@@ -23,7 +26,7 @@ module purge
 module use "${HOME}/apps/modules"
 module load WarpX/26.03_lynx_cpu_rz_yee_openpmd_py311
 source "${HOME}/apps/venvs/warpx-26.03-py311/bin/activate"
-python -m pip install .
+python -m pip install '.[animation]'
 python -m unittest discover -s tests -p "test_*.py"
 ```
 
@@ -68,8 +71,20 @@ if [[ -n "${STALE}" ]]; then
 fi
 ```
 
-Submit the one array element.  Leave animation off until the core CSV/plot
-contract passes; set `MNA_MAKE_ANIMATION=1` on a later rerun if desired.
+Submit the one array element only after the site environment is ready.
+The current campaign sets `MNA_MAKE_ANIMATION=1` in materialized `case.env`
+and requires `post/plots/mna_Ez_all_frames.mp4`. Keep animation enabled for
+this profile and provide the animation dependency. Disabling the environment
+flag alone does not remove the required-output contract; a different profile
+needs a separately reviewed configuration.
+
+The MP4 requirement belongs to this campaign configuration. Video is not an
+input to the carbon-gain or Ez-percentile objective formulas and is not an
+intrinsic physical prerequisite for evaluating them. The field diagnostics and
+their temporal coverage are still needed for the field objective. Treat video
+production and numerical/scientific checks separately when reviewing a future
+profile; the instructions here preserve the current required-output behavior.
+The dated Cloud baseline does not validate this LYNX launch procedure.
 
 ```bash
 cd "${CAMPAIGN_ROOT}"
@@ -90,7 +105,11 @@ The success criteria are:
 - `validation.json` reports raw and reduced outputs as valid;
 - `post/mna_case_summary.csv` contains finite values for both objective
   columns;
-- `post/carbon_probe_timeseries.csv` reaches approximately 1000 fs;
-- the cleanup phase only prints a dry-run manifest and leaves every H5 file
-  intact.
+- `post/carbon_probe_timeseries.csv` contains the last physical probe sample:
+  near the configured stop time if the probe survives, or before a classified
+  boundary loss; inspect terminal reason, position, and sampling gap;
+- the required PNGs and `post/plots/mna_Ez_all_frames.mp4` are present and
+  non-empty; workflow file validation alone does not prove visual correctness;
+- the cleanup dry run writes a manifest/evidence and leaves every H5 file
+  intact. Keep `CONFIRM_CLEANUP_EXECUTE` unset or `0`.
 
